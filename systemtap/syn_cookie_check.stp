@@ -1,0 +1,12 @@
+probe kernel.function("tcp_v4_syn_recv_sock").return {
+        printf("tcp_v4_syn_recv_sock: sk.sk_ack_backlog=%d, sk.sk_max_ack_backlog=%d, return=%d\n", $sk->sk_ack_backlog, $sk->sk_max_ack_backlog, $return)
+}
+
+probe kernel.function("cookie_v4_check").return {
+        source_port = @cast($skb->head + $skb->transport_header, "struct tcphdr")->source
+        printf("source=%d, return=%d\n", readable_port(source_port), $return)
+}
+
+function readable_port(port) {
+        return (port & ((1<<9)-1)) << 8 | (port >> 8)
+}
